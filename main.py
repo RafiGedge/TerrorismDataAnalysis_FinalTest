@@ -29,7 +29,8 @@ def return_as_dicts(o_id, o_name) -> list[dict[int, str]]:
               .drop_duplicates()
               .rename(columns={o_id: 'id', o_name: 'name'})
               .to_dict('records'))
-    return result.sort(key=lambda x: x['id'])
+    result.sort(key=lambda x: x['id'])
+    return result
 
 
 def insert_to_db(o_list, model):
@@ -71,7 +72,7 @@ def insert_events():
 
 
 with measure_block_time():
-    # insert_foreign_keys()
+    insert_foreign_keys()
     insert_events()
 
 # for _, row in row_iterator:
