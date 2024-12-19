@@ -1,9 +1,8 @@
 import math
 import pandas as pd
-from sqlalchemy import event
-
-from check_times import measure_block_time
+from itertools import islice
 from database import session_maker, Country, Region, Attacktype, Targtype, Event
+from check_times import measure_block_time
 
 columns = [
     'iyear', 'imonth', 'iday',
@@ -30,9 +29,7 @@ def return_as_dicts(o_id, o_name) -> list[dict[int, str]]:
               .drop_duplicates()
               .rename(columns={o_id: 'id', o_name: 'name'})
               .to_dict('records'))
-
-    result.sort(key=lambda x: x['id'])
-    return result
+    return result.sort(key=lambda x: x['id'])
 
 
 def insert_to_db(o_list, model):
@@ -43,51 +40,39 @@ def insert_to_db(o_list, model):
     return len(o_list)
 
 
-@event.listens_for(Event, 'before_insert')
-def receive_before_insert(mapper, connection, target):
-    if math.isnan(target.nkill):
-        target.nkill = 0
-    if math.isnan(target.nwound):
-        target.nwound = 0
-    target.score = target.nkill * 2 + target.nwound
-
-
 def insert_foreign_keys():
-    regions = return_as_dicts('region_id', 'region_txt')
-    counties = return_as_dicts('country_id', 'country_txt')
-    attacktypes = return_as_dicts('attackType_id', 'attacktype1_txt')
-    targtypes = return_as_dicts('targetType_id', 'targtype1_txt')
+    insert_to_db(return_as_dicts('country_id', 'country_txt'), Country)
+    insert_to_db(return_as_dicts('region_id', 'region_txt'), Region)
+    insert_to_db(return_as_dicts('attackType_id', 'attacktype1_txt'), Attacktype)
+    insert_to_db(return_as_dicts('targetType_id', 'targtype1_txt'), Targtype)
 
-    print(f'{insert_to_db(counties, Country)} records, countries.')
-    print(f'{insert_to_db(regions, Region)} records, regions.')
-    print(f'{insert_to_db(attacktypes, Attacktype)} records, attacktypes.')
-    print(f'{insert_to_db(targtypes, Targtype)} records, targtypes.')
+
+def before_insert(event: dict):
+    if math.isnan(event['nkill']):
+        event['nkill'] = 0
+    if math.isnan(event['nwound']):
+        event['nwound'] = 0
+    event['score'] = event['nkill'] * 2 + event['nwound']
+    return event
 
 
 def insert_events():
     row_iterator = df.drop(['country_txt', 'region_txt', 'attacktype1_txt', 'targtype1_txt', 'city'], axis=1).iterrows()
     count = 0
     while True:
+        chunk = list(islice((before_insert(row.to_dict()) for _, row in row_iterator), 1000))
+        count += len(chunk)
+        if not chunk:
+            break
         with session_maker() as session:
-            try:
-                for i in range(1000):
-                    _, row = next(row_iterator)
-                    row_dict = row.to_dict()
-                    session.add(Event(**row_dict))
-                    count += 1
-                session.commit()
-                print(f'\rInserted records: {count}', end='')
-            except StopIteration:
-                session.commit()
-                print(f'\rInserted records: {count}', end='')
-                break
-    return
-
-# with measure_block_time():
-# insert_foreign_keys()
-# insert_events()
+            session.bulk_insert_mappings(Event, chunk)
+            session.commit()
+            print(f'\rInserted records: {count}', end='')
 
 
+with measure_block_time():
+    # insert_foreign_keys()
+    insert_events()
 
 # for _, row in row_iterator:
 #     row_dict = row.to_dict()
