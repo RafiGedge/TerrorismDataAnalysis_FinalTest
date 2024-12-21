@@ -4,3 +4,4 @@ from database.models.country_model import Country
 from database.models.region_model import Region
 from database.models.attacktype_model import Attacktype
 from database.models.targtype_model import Targtype
+from database.models.gname_model import Gname

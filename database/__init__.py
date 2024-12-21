@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import database_exists, create_database
 
 from settings.postgres_config import URL
-from database.models import Base, Event, Country, Region, Attacktype, Targtype
+from database.models import *
 
 engine = create_engine(f'{URL}/terrorism_data')
 

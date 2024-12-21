@@ -30,5 +30,3 @@ def measure_block_time():
 
     return TimerContextManager()
 
-# @measure_time
-# with measure_block_time():
