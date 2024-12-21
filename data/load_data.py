@@ -16,7 +16,7 @@ columns = [
     'nkill', 'nwound'
 ]
 
-file_path = 'data_files/globalterrorismdb_0718dist.csv'
+file_path = 'files/globalterrorismdb_0718dist.csv'
 
 df = pd.read_csv(file_path, encoding='latin1', usecols=columns)
 df.rename(columns={
@@ -73,7 +73,7 @@ def insert_events():
 
 with measure_block_time():
     insert_foreign_keys()
-    insert_events()
+    # insert_events()
 
 # for _, row in row_iterator:
 #     row_dict = row.to_dict()

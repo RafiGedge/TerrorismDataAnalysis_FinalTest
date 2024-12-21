@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Index
 from sqlalchemy.orm import relationship
 
 from database.models.base import Base
@@ -11,6 +11,8 @@ class Country(Base):
     name = Column(String, nullable=True, unique=True)
 
     events = relationship("Event", back_populates="countries")
+
+    # __table_args__ = (Index('idx_name', 'name'),)
 
 # from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 # from sqlalchemy.ext.declarative import declarative_base
