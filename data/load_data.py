@@ -1,10 +1,9 @@
-from datetime import date
 import math
+from datetime import date
+import numpy as np
 import pandas as pd
 from itertools import islice
-
 from sqlalchemy import text
-
 from database import session_maker, Country, Region, Attacktype, Targtype, Event, Gname
 from check_times import measure_block_time
 
@@ -24,6 +23,7 @@ def load_csv():
     df.rename(columns={
         'region': 'region_id', 'country': 'country_id', 'attacktype1': 'attacktype_id', 'targtype1': 'targettype_id',
         'gname': 'gname_id'}, inplace=True)
+    df = df.replace({np.nan: None})
 
 
 def return_as_dicts(*args) -> list[dict]:
@@ -62,13 +62,6 @@ def before_insert(event: dict):
         event['date'] = date(event['iyear'], 1, 1)
         event['is_year_only'] = True
     del event['iyear'], event['imonth'], event['iday']
-
-    if math.isnan(event['nkill']):
-        event['nkill'] = 0
-    if math.isnan(event['nwound']):
-        event['nwound'] = 0
-    if math.isnan(event['nperps'] or event['nperps'] == -99):
-        event['nperps'] = 0
     event['gname_id'] = gnames_foreignkeys[event['gname_id']]
     return event
 

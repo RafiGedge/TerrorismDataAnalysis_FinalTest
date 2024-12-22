@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Map</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index_style.css') }}">
+</head>
+<body>
+<h1>בחר איזור מהרשימה</h1>
+<form method="POST" action="/">
+    <label for="mySelect">איזור:</label>
+    <select id="mySelect" name="mySelect">
+        {% for item in list_items %}
+        <option value="{{ item }}">{{ item }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">שמור</button>
+</form>
+<iframe src="{{ url_map }}"></iframe>
+</body>
+</html>
