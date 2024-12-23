@@ -8,7 +8,7 @@
 </head>
 <body>
 <h1>בחר איזור מהרשימה</h1>
-<form method="POST" action="/">
+<form method="POST" action="{{ action }}">
     <label for="mySelect">איזור:</label>
     <select id="mySelect" name="mySelect">
         {% for item in list_items %}

@@ -8,6 +8,6 @@ class Attacktype(Base):
     __tablename__ = 'attacktypes'  # noqa
 
     id = Column(Integer, primary_key=True)
-    name = Column(String)
+    name = Column(String, unique=True)
 
     events = relationship('Event', back_populates='attacktypes')

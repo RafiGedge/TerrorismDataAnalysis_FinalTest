@@ -5,12 +5,15 @@ def get_centroid(coordinates: list[list]) -> tuple:
     x = 0
     y = 0
     z = 0
-    for lat, lon in coordinates:
-        latitude = math.radians(lat)
-        longitude = math.radians(lon)
-        x += math.cos(latitude) * math.cos(longitude)
-        y += math.cos(latitude) * math.sin(longitude)
-        z += math.sin(latitude)
+    try:
+        for lat, lon in coordinates:
+            latitude = math.radians(lat)
+            longitude = math.radians(lon)
+            x += math.cos(latitude) * math.cos(longitude)
+            y += math.cos(latitude) * math.sin(longitude)
+            z += math.sin(latitude)
+    except TypeError:
+        return None, None
 
     total = len(coordinates)
     x /= total

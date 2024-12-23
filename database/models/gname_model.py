@@ -8,6 +8,6 @@ class Gname(Base):
     __tablename__ = 'gnames'  # noqa
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=True, unique=True)
+    name = Column(String, unique=True)
 
     events = relationship("Event", back_populates="gnames")

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, Float, Date, Boolean, Index
+from sqlalchemy import Column, Integer, ForeignKey, Float, Date, Boolean, Index, String
 from sqlalchemy.orm import relationship
 
 from database.models.base import Base
@@ -12,7 +12,7 @@ class Event(Base):
     is_year_only = Column(Boolean, default=False)
     region_id = Column(Integer, ForeignKey('regions.id'))
     country_id = Column(Integer, ForeignKey('countries.id'))
-    # city = Column(String, nullable=True)
+    city_id = Column(Integer, ForeignKey('cities.id'))
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     attacktype_id = Column(Integer, ForeignKey('attacktypes.id'))
@@ -21,8 +21,10 @@ class Event(Base):
     nperps = Column(Float, nullable=True)
     nkill = Column(Float, nullable=True)
     nwound = Column(Float, nullable=True)
+    score = Column(Float, nullable=True, default=None)
 
     countries = relationship("Country", back_populates="events")
+    cities = relationship("City", back_populates="events")
     regions = relationship("Region", back_populates="events")
     attacktypes = relationship("Attacktype", back_populates="events")
     targtypes = relationship("Targtype", back_populates="events")
