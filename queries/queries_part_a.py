@@ -1,4 +1,3 @@
-import numpy as np
 from sqlalchemy import desc, func
 from database import session_maker, Event, Attacktype, Region, Gname
 from services.calciualte_coorelation import get_correlation
