@@ -86,13 +86,17 @@ def get_most_active_groups(region=None):
 def get_correlation_victims_for_events(region=None):
     with session_maker() as session:
         query = session.query(
-            Region.name, func.array_agg(Event.score).label('event_scores')) \
+            Region.name, func.array_agg(Event.score), Region.latitude, Region.longitude) \
             .join(Region.events) \
             .filter(Event.score.isnot(None)) \
-            .group_by(Region.id)
+            .group_by(Region.id, Region.latitude, Region.longitude)
 
     if region:
         query = query.filter(Region.name == region)
 
     result = query.all()
-    return {row.name: get_correlation(row.event_scores) for row in result}
+    return [{
+        'region': i[0],
+        'correlation': round(get_correlation(i[1]), 5),
+        'location': (i[2], i[3])}
+        for i in result]

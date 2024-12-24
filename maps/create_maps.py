@@ -1,8 +1,13 @@
 import folium
-from queries.queries_part_a import get_victims_average, get_most_active_groups
+from queries.queries_part_a import get_victims_average, get_most_active_groups, get_correlation_victims_for_events
 from queries.queries_part_b import get_unique_groups_by_area
 
 path = '../front/templates/map.html'
+
+
+def create_empty_map():
+    m = folium.Map(location=(21, 9), zoom_start=3)
+    m.save(path)
 
 
 def create_map_for_victims_average(region=None, limit_five: bool = False):
@@ -52,19 +57,33 @@ def create_map_for_unique_groups(area):
     m = folium.Map()
     for i in data:
         popup_content = f"""
-                <div style="width:150px; font-size:14px;">
+                <div style="width:100px; font-size:14px;">
                     <h3>{i['region']}</h3>
                     <p>{i['num_groups']}</p>
                 </div>
                 """
         folium.Marker(
             location=i['location'],
-            popup=folium.Popup(popup_content, max_width=150),
+            popup=folium.Popup(popup_content, max_width=100),
         ).add_to(m)
     m.fit_bounds(coordinates_list, max_zoom=4)
     m.save(path)
 
 
-def create_empty_map():
-    m = folium.Map(location=(21, 9), zoom_start=3)
+def create_map_for_corr_victims_for_events(region=None):
+    data = get_correlation_victims_for_events(region)
+    coordinates_list = [i['location'] for i in data]
+    m = folium.Map()
+    for i in data:
+        popup_content = f"""
+                <div style="width:100px; font-size:14px;">
+                    <h3>{i['region']}</h3>
+                    <p>{i['correlation']}</p>
+                </div>
+                """
+        folium.Marker(
+            location=i['location'],
+            popup=folium.Popup(popup_content, max_width=100),
+        ).add_to(m)
+    m.fit_bounds(coordinates_list, max_zoom=4)
     m.save(path)

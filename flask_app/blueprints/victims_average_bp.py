@@ -3,12 +3,12 @@ from flask import Blueprint, request, render_template
 from queries.queries_service import get_regions
 from maps.create_maps import create_map_for_victims_average
 
-average_victims_bp = Blueprint('average_victims_bp', __name__)
+victims_average_bp = Blueprint('victims_average_bp', __name__)
 
 options = ['All', 'Top5'] + get_regions()
 
 
-@average_victims_bp.route('/victims_average', methods=['GET', 'POST'])
+@victims_average_bp.route('/victims_average', methods=['GET', 'POST'])
 def victims_average():
     name = request.args.get('name')
     selected_item = 'All'
@@ -19,7 +19,7 @@ def victims_average():
                            action='victims_average', name=name if name else selected_item)
 
 
-@average_victims_bp.route('/map_for_victims_average')
+@victims_average_bp.route('/map_for_victims_average')
 def map_for_victims_average():
     params = {'region': None, 'limit_five': False}
     result = urllib.parse.unquote(request.args.get('result'))
