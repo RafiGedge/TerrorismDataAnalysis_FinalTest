@@ -22,4 +22,4 @@ def unique_groups():
 def map_for_unique_groups():
     area = request.args.get('result')
     create_map_for_unique_groups(area)
-    return render_template('map_for_unique_groups.html')
+    return render_template('map.html')

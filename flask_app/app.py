@@ -1,5 +1,4 @@
 from flask import Flask
-
 from flask_app.blueprints.average_victims_bp import average_victims_bp
 from flask_app.blueprints.index_bp import index_bp
 from flask_app.blueprints.most_active_groups_bp import active_groups_bp

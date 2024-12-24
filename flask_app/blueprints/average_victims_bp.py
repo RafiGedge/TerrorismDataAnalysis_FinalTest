@@ -30,4 +30,4 @@ def map_for_victims_average():
         params['region'] = result
 
     create_map_for_victims_average(**params)
-    return render_template("map_for_victims_average.html")
+    return render_template("map.html")

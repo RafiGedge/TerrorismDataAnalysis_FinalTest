@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 
+from maps.create_maps import create_empty_map
+
 index_bp = Blueprint('index_bp', __name__)
 
 option = ['הצגת ממוצע נפגעים לפי אזור', 'הצגת הקבוצות הפעילות ביותר לפי אזור', 'הצגת כמות הקבוצות השונות לפי אזור']
@@ -16,4 +18,5 @@ def index():
 
 @index_bp.route('/empty_map')
 def empty_map():
-    return render_template('empty_map.html')
+    create_empty_map()
+    return render_template('map.html')

@@ -1,7 +1,8 @@
 import folium
-
 from queries.queries_part_a import get_victims_average, get_most_active_groups
 from queries.queries_part_b import get_unique_groups_by_area
+
+path = '../front/templates/map.html'
 
 
 def create_map_for_victims_average(region=None, limit_five: bool = False):
@@ -20,7 +21,7 @@ def create_map_for_victims_average(region=None, limit_five: bool = False):
             popup=folium.Popup(popup_content, max_width=150),
         ).add_to(m)
     m.fit_bounds(coordinates_list, max_zoom=4)
-    m.save("../front/templates/map_for_victims_average.html")
+    m.save(path)
 
 
 def create_map_for_active_groups(region=None):
@@ -42,7 +43,7 @@ def create_map_for_active_groups(region=None):
             popup=folium.Popup(popup_content, max_width=300),
         ).add_to(m)
     m.fit_bounds(coordinates_list, max_zoom=4)
-    m.save("../front/templates/map_for_active_groups.html")
+    m.save(path)
 
 
 def create_map_for_unique_groups(area):
@@ -61,4 +62,9 @@ def create_map_for_unique_groups(area):
             popup=folium.Popup(popup_content, max_width=150),
         ).add_to(m)
     m.fit_bounds(coordinates_list, max_zoom=4)
-    m.save("../front/templates/map_for_unique_groups.html")
+    m.save(path)
+
+
+def create_empty_map():
+    m = folium.Map(location=(21, 9), zoom_start=3)
+    m.save(path)
