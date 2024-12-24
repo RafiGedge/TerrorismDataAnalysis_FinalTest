@@ -1,8 +1,7 @@
-from sqlalchemy import desc, func, extract
-from data.service.service import get_centroid
-from database import session_maker, Event, Attacktype, Region, Gname, Targtype
-import pandas as pd
-from scipy.stats import pearsonr
+import numpy as np
+from sqlalchemy import desc, func
+from database import session_maker, Event, Attacktype, Region, Gname
+from services.calciualte_coorelation import get_correlation
 
 
 # Question 1
@@ -82,3 +81,19 @@ def get_most_active_groups(region=None):
             result[i.region_name]['groups'][i.group_name] = i.event_count
 
     return result
+
+
+# # Question 10 map
+def get_correlation_victims_for_events(region=None):
+    with session_maker() as session:
+        query = session.query(
+            Region.name, func.array_agg(Event.score).label('event_scores')) \
+            .join(Region.events) \
+            .filter(Event.score.isnot(None)) \
+            .group_by(Region.id)
+
+    if region:
+        query = query.filter(Region.name == region)
+
+    result = query.all()
+    return {row.name: get_correlation(row.event_scores) for row in result}

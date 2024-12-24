@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, Float, Date, Boolean, Index, String
+from sqlalchemy import Column, Integer, ForeignKey, Float, Date, Boolean
 from sqlalchemy.orm import relationship
 
 from database.models.base import Base
@@ -29,5 +29,3 @@ class Event(Base):
     attacktypes = relationship("Attacktype", back_populates="events")
     targtypes = relationship("Targtype", back_populates="events")
     gnames = relationship("Gname", back_populates="events")
-
-    # __table_args__ = (Index('iyear', 'iyear'))

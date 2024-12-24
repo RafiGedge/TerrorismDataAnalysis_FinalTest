@@ -1,11 +1,7 @@
-import math
-from datetime import date
-from types import NoneType
-
 import numpy as np
 import pandas as pd
+from datetime import date
 from itertools import islice
-from sqlalchemy import text
 from database import session_maker, Country, Region, Attacktype, Targtype, Event, Gname, City
 from check_times import measure_block_time
 
@@ -105,3 +101,6 @@ with measure_block_time():
     load_csv()
     # insert_foreign_keys()
     # insert_events()
+    # insert_coordinates(Region)
+    # insert_coordinates(Country)
+    # insert_coordinates(City)

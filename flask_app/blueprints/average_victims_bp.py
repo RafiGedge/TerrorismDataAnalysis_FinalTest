@@ -1,20 +1,22 @@
 import urllib.parse
 from flask import Blueprint, request, render_template
-from data.queries.service_queries import get_regions
+from queries.queries_service import get_regions
 from maps.create_maps import create_map_for_victims_average
 
-average_victims_bp = Blueprint('victims_average_bp', __name__)
+average_victims_bp = Blueprint('average_victims_bp', __name__)
 
 options = ['All', 'Top5'] + get_regions()
 
 
 @average_victims_bp.route('/victims_average', methods=['GET', 'POST'])
 def victims_average():
+    name = request.args.get('name')
     selected_item = 'All'
     if request.method == 'POST':
-        selected_item = request.form.get('mySelect')
+        selected_item = request.form.get('Options')
     url_map = f"map_for_victims_average?result={urllib.parse.quote(selected_item)}"
-    return render_template('index.html', list_items=options, url_map=url_map, action='victims_average')
+    return render_template('index.html', list_items=options, url_map=url_map,
+                           action='victims_average', name=name if name else selected_item)
 
 
 @average_victims_bp.route('/map_for_victims_average')
