@@ -4,6 +4,7 @@ from datetime import date
 from itertools import islice
 from database import session_maker, Country, Region, Attacktype, Targtype, Event, Gname, City
 from check_times import measure_block_time
+from queries.queries_service import insert_coordinates
 
 file_path = 'files/globalterrorismdb_0718dist.csv'
 
@@ -36,7 +37,6 @@ def convert_to_instances(params: list, model) -> list[dict]:
     if is_two_params:
         result.sort(key=lambda x: x['id'])
     result = [model(**i) for i in result]
-    print(result)
     return result
 
 
@@ -95,12 +95,14 @@ def insert_events():
             session.bulk_insert_mappings(Event, chunk)
             session.commit()
             print(f'\rInserted records: {count}', end='')
+    print()
 
 
-with measure_block_time():
-    load_csv()
-    # insert_foreign_keys()
-    # insert_events()
-    # insert_coordinates(Region)
-    # insert_coordinates(Country)
-    # insert_coordinates(City)
+if __name__ == '__main__':
+    with measure_block_time():
+        load_csv()
+        insert_foreign_keys()
+        insert_events()
+        insert_coordinates(Region)
+        insert_coordinates(Country)
+        insert_coordinates(City)

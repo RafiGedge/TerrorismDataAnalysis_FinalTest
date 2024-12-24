@@ -1,21 +1,20 @@
 from datetime import datetime
 from itertools import islice
-
+import numpy as np
 import pandas as pd
-from sqlalchemy import func
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
+from check_times import measure_block_time
+from database import Country, session_maker, Attacktype, Gname, City, Event
 
-from database import Country, session_maker, Attacktype, Gname, City, Targtype, Event
-
-# from main import get_coordinates
-
-file_path = 'files/RAND_Database_of_Worldwide_Terrorism_Incidents - 5000 rows.csv'
+file_path = 'files/RAND_Database_of_Worldwide_Terrorism_Incidents.csv'
 
 df: pd.DataFrame = pd.DataFrame()
 countries_foreignkeys: dict = dict()
 cities_foreignkeys: dict = dict()
 attacktypes_foreignkeys: dict = dict()
 gnames_foreignkeys: dict = dict()
+regions_foreignkeys: dict = dict()
 
 
 def load_csv():
@@ -23,6 +22,7 @@ def load_csv():
     columns = ['Date', 'City', 'Country', 'Perpetrator', 'Weapon', 'Injuries', 'Fatalities']
     df = pd.read_csv(file_path, encoding='latin1', usecols=columns)
     df.rename(columns={'Date': 'date', 'Fatalities': 'nkill', 'Injuries': 'nwound'}, inplace=True)
+    df = df.replace({np.nan: None})
 
 
 def insert_keys_to_db(unique_list: list, model):
@@ -51,28 +51,46 @@ def convert_date(date_string: str) -> datetime:
 
 
 def get_foreignkeys():
-    global countries_foreignkeys, cities_foreignkeys, attacktypes_foreignkeys, gnames_foreignkeys
+    global countries_foreignkeys, cities_foreignkeys, attacktypes_foreignkeys, gnames_foreignkeys, regions_foreignkeys
     with session_maker() as session:
         countries_query = session.query(Country).all()
         cities_query = session.query(City).all()
         attacktypes_query = session.query(Attacktype).all()
         gnames_query = session.query(Gname).all()
-        countries_foreignkeys = {o.name: o.id for o in countries_query}
-        cities_foreignkeys = {o.name: o.id for o in cities_query}
-        attacktypes_foreignkeys = {o.name: o.id for o in attacktypes_query}
-        gnames_foreignkeys = {o.name: o.id for o in gnames_query}
+
+    countries_foreignkeys = {o.name: o.id for o in countries_query}
+    cities_foreignkeys = {o.name: [o.id, o.latitude, o.longitude] for o in cities_query}
+    attacktypes_foreignkeys = {o.name: o.id for o in attacktypes_query}
+    gnames_foreignkeys = {o.name: o.id for o in gnames_query}
+    get_regions_foreignkeys()
+
+
+def get_regions_foreignkeys():
+    global regions_foreignkeys
+    with session_maker() as session:
+        foreign_key_values = session.execute(select(Country.id)).scalars().all()
+
+        regions_query = session.query(Event.country_id, Event.region_id) \
+            .filter(Event.region_id.isnot(None), Event.country_id.in_(foreign_key_values)).all()
+
+    regions_foreignkeys = {fk: None for fk in foreign_key_values}
+    for fk, value in regions_query:
+        if fk not in regions_foreignkeys or regions_foreignkeys[fk] is None:
+            regions_foreignkeys[fk] = value
 
 
 def before_insert(event: dict) -> dict:
     event['date'] = convert_date(event['date'])
-    event['county_id'] = countries_foreignkeys[event['Country']]
+    event['country_id'] = countries_foreignkeys[event['Country']]
     try:
-        event['city_id'] = cities_foreignkeys[event['City']]
+        event['city_id'], event['latitude'], event['longitude'] = cities_foreignkeys[event['City']]
     except KeyError:
         event['city_id'] = 3
     event['attacktype_id'] = attacktypes_foreignkeys[event['Weapon']]
     event['gname_id'] = gnames_foreignkeys[event['Perpetrator']]
+    event['region_id'] = regions_foreignkeys[event['country_id']]
     del event['Country'], event['City'], event['Weapon'], event['Perpetrator']
+    event['score'] = event['nkill'] * 2 + event['nwound']
     return event
 
 
@@ -91,21 +109,8 @@ def insert_events():
             print(f'\rInserted records: {count}', end='')
 
 
-# load_csv()
-# # complete_foreignkeys()
-# # unique_cities = df['City'].unique().tolist()
-# result = []
-# for city in unique_cities:
-#     answer = get_coordinates(city)
-#     result.append(answer)
-# print(result)
-# print(len(result))
-# print(result.count(None))
-load_csv()
-complete_foreignkeys()
-# insert_events()
-# print(df['Weapon'].unique().tolist())
-# get_foreignkeys()
-# print(attacktypes_foreignkeys)
-
-# insert_events()
+if __name__ == '__main__':
+    with measure_block_time():
+        load_csv()
+        complete_foreignkeys()
+        insert_events()

@@ -26,3 +26,4 @@ def insert_coordinates(model):
                 {model.latitude: value[0], model.longitude: value[1]}, synchronize_session=False
             )
         session.commit()
+    print(f'Coordinates updated for {model.__tablename__}')
