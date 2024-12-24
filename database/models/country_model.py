@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Index, Float
+from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.orm import relationship
 
 from database.models.base import Base
@@ -13,5 +13,3 @@ class Country(Base):
     longitude = Column(Float, nullable=True, default=None)
 
     events = relationship("Event", back_populates="countries")
-
-    # __table_args__ = (Index('idx_name', 'name'),)
