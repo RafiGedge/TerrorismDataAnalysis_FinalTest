@@ -1,4 +1,1 @@
-USER = 'postgres'
-PASSWORD = '1234'
-
-URL = f'postgresql://{USER}:{PASSWORD}@localhost:5433'
+DATABASE_URL = 'postgresql://postgres:1234@localhost:5433'

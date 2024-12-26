@@ -1,13 +1,12 @@
-from datetime import datetime
-from itertools import islice
 import numpy as np
 import pandas as pd
+from pathlib import Path
+from datetime import datetime
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
-from check_times import measure_block_time
+from data.services.insert_events_service import insert_events_to_db
+from data.services.load_csv_service import load_csv
 from database import Country, session_maker, Attacktype, Gname, City, Event
-
-file_path = 'files/RAND_Database_of_Worldwide_Terrorism_Incidents.csv'
 
 df: pd.DataFrame = pd.DataFrame()
 countries_foreignkeys: dict = dict()
@@ -17,12 +16,12 @@ gnames_foreignkeys: dict = dict()
 regions_foreignkeys: dict = dict()
 
 
-def load_csv():
-    global df
+def get_csv():
+    file_path = Path(__file__).parent / 'files' / 'RAND_Database_of_Worldwide_Terrorism_Incidents.csv'
     columns = ['Date', 'City', 'Country', 'Perpetrator', 'Weapon', 'Injuries', 'Fatalities']
-    df = pd.read_csv(file_path, encoding='latin1', usecols=columns)
-    df.rename(columns={'Date': 'date', 'Fatalities': 'nkill', 'Injuries': 'nwound'}, inplace=True)
-    df = df.replace({np.nan: None})
+    renames = {'Date': 'date', 'Fatalities': 'nkill', 'Injuries': 'nwound'}
+    global df
+    df = load_csv(file_path, columns, renames)
 
 
 def insert_keys_to_db(unique_list: list, model):
@@ -97,20 +96,10 @@ def before_insert(event: dict) -> dict:
 def insert_events():
     get_foreignkeys()
     row_iterator = df.iterrows()
-    count = 0
-    while True:
-        chunk = list(islice((before_insert(row.to_dict()) for _, row in row_iterator), 1000))
-        count += len(chunk)
-        if not chunk:
-            break
-        with session_maker() as session:
-            session.bulk_insert_mappings(Event, chunk)
-            session.commit()
-            print(f'\rInserted records: {count}', end='')
+    insert_events_to_db(row_iterator, before_insert)
 
 
-if __name__ == '__main__':
-    with measure_block_time():
-        load_csv()
-        complete_foreignkeys()
-        insert_events()
+def add_secondary_data():
+    get_csv()
+    complete_foreignkeys()
+    insert_events()

@@ -5,7 +5,7 @@ from database.models.base import Base
 
 
 class City(Base):
-    __tablename__ = 'cities'  # noqa
+    __tablename__ = 'cities'
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     latitude = Column(Float, nullable=True, default=None)

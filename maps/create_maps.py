@@ -1,8 +1,9 @@
 import folium
+from pathlib import Path
 from queries.queries_part_a import get_victims_average, get_most_active_groups, get_correlation_victims_for_events
 from queries.queries_part_b import get_unique_groups_by_area
 
-path = '../front/templates/map.html'
+path = Path(__file__).parent.parent / 'front' / 'templates' / 'map.html'
 
 
 def create_empty_map():

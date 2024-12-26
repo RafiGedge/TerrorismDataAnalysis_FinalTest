@@ -5,7 +5,7 @@ from database.models.base import Base
 
 
 class Attacktype(Base):
-    __tablename__ = 'attacktypes'  # noqa
+    __tablename__ = 'attacktypes'
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)

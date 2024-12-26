@@ -5,10 +5,10 @@ from database.models.base import Base
 
 
 class Event(Base):
-    __tablename__ = 'events'  # noqa
+    __tablename__ = 'events'
 
     id = Column(Integer, primary_key=True)
-    date = Column(Date, nullable=True)
+    date = Column(Date, nullable=True, default=None)
     is_year_only = Column(Boolean, default=False)
     region_id = Column(Integer, ForeignKey('regions.id'))
     country_id = Column(Integer, ForeignKey('countries.id'))

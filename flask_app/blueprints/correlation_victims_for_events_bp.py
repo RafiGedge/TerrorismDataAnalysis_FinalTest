@@ -1,7 +1,6 @@
-from flask import Blueprint, request, render_template
 import urllib.parse
-
-from maps.create_maps import create_empty_map, create_map_for_corr_victims_for_events
+from flask import Blueprint, request, render_template
+from maps.create_maps import create_map_for_corr_victims_for_events
 from queries.queries_service import get_regions
 
 corr_victims_for_events_bp = Blueprint('corr_victims_for_events_bp', __name__)

@@ -5,7 +5,7 @@ from database.models.base import Base
 
 
 class Targtype(Base):
-    __tablename__ = 'targtypes'  # noqa
+    __tablename__ = 'targtypes'
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)

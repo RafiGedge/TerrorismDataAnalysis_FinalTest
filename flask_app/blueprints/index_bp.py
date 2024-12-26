@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, request, redirect, url_for
-
 from maps.create_maps import create_empty_map
 
 index_bp = Blueprint('index_bp', __name__)

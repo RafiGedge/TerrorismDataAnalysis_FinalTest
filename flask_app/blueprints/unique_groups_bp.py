@@ -1,5 +1,4 @@
 from flask import Blueprint, request, render_template
-
 from maps.create_maps import create_map_for_unique_groups
 
 unique_groups_bp = Blueprint('unique_groups_bp', __name__)
