@@ -1,12 +1,11 @@
-import numpy as np
 import pandas as pd
 from pathlib import Path
+from itertools import islice
 from datetime import datetime
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
-from data.services.insert_events_service import insert_events_to_db
-from data.services.load_csv_service import load_csv
-from database import Country, session_maker, Attacktype, Gname, City, Event
+from load_data.services.load_csv_service import load_csv
+from db_connection import Country, session_maker, Attacktype, Gname, City, Event
 
 df: pd.DataFrame = pd.DataFrame()
 countries_foreignkeys: dict = dict()
@@ -36,10 +35,14 @@ def insert_keys_to_db(unique_list: list, model):
 
 
 def complete_foreignkeys():
-    insert_keys_to_db(df['Country'].unique().tolist(), Country)
-    insert_keys_to_db(df['City'].unique().tolist(), City)
-    insert_keys_to_db(df['Weapon'].unique().tolist(), Attacktype)
-    insert_keys_to_db(df['Perpetrator'].unique().tolist(), Gname)
+    data_to_insert = [
+        ('Country', Country),
+        ('City', City),
+        ('Weapon', Attacktype),
+        ('Perpetrator', Gname)
+    ]
+    for column, model in data_to_insert:
+        insert_keys_to_db(df[column].unique().tolist(), model)
 
 
 def convert_date(date_string: str) -> datetime:
@@ -96,10 +99,22 @@ def before_insert(event: dict) -> dict:
 def insert_events():
     get_foreignkeys()
     row_iterator = df.iterrows()
-    insert_events_to_db(row_iterator, before_insert)
+    count = 0
+    while True:
+        chunk = list(islice((before_insert(row.to_dict()) for _, row in row_iterator), 1000))
+        count += len(chunk)
+        if not chunk:
+            break
+        with session_maker() as session:
+            session.bulk_insert_mappings(Event, chunk)
+            session.commit()
+            print(f'\rInserted records: {count}', end='')
+    print()
 
 
 def add_secondary_data():
     get_csv()
     complete_foreignkeys()
     insert_events()
+
+# TODO: editing file

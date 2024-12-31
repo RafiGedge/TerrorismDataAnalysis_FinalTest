@@ -1,5 +1,5 @@
 from sqlalchemy import func, desc
-from database import session_maker, Event, Gname, Region, Targtype, Country
+from db_connection import session_maker, Event, Gname, Region, Targtype, Country
 
 
 # Question 15

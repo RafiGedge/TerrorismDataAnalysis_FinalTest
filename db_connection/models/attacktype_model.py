@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
-from database.models.base import Base
+from db_connection.models.base import Base
 
 
 class Attacktype(Base):

@@ -1,9 +1,10 @@
 import pandas as pd
-from pathlib import Path
+import numpy as np
 from datetime import date
-from data.services.insert_events_service import insert_events_to_db
-from data.services.load_csv_service import load_csv
-from database import session_maker, Country, Region, Attacktype, Targtype, Gname, City
+from pathlib import Path
+from load_data.services.insert_events_service import insert_events_to_db
+from load_data.services.load_csv_service import load_csv
+from db_connection import Country, Region, Attacktype, Targtype, Gname, City, session_maker
 from queries.queries_service import get_average_by_area
 
 df: pd.DataFrame = pd.DataFrame()
@@ -33,14 +34,6 @@ def convert_to_instances(params: list, model) -> list[dict]:
     return result
 
 
-def insert_keys_to_db(params: list, model):
-    converted_data = convert_to_instances(params, model)
-    with session_maker() as session:
-        session.add_all(converted_data)
-        session.commit()
-    print(f'records inserted: {len(converted_data)} at table: {model.__tablename__}')
-
-
 def insert_foreign_keys():
     data_to_insert = [
         (['country_id', 'country_txt'], Country),
@@ -50,21 +43,12 @@ def insert_foreign_keys():
         (['gname'], Gname),
         (['city'], City)
     ]
-    for params, model in data_to_insert:
-        insert_keys_to_db(params, model)
-
-
-def before_insert(event: dict) -> dict:
-    month, day = event['imonth'], event['iday']
-    if 0 in (month, day):
-        month, day = 1, 1
-        event['is_year_only'] = True
-    event['date'] = date(event['iyear'], month, day)
-    event['gname_id'] = gnames_foreignkeys[event['gname']]
-    event['city_id'] = cities_foreignkeys[event['city']]
-    if None not in (event['nkill'], event['nwound']):
-        event['score'] = event['nkill'] * 2 + event['nwound']
-    return event
+    for columns, model in data_to_insert:
+        converted_data = convert_to_instances(columns, model)
+        with session_maker() as session:
+            session.add_all(converted_data)
+            session.commit()
+        print(f'records inserted: {len(converted_data)} at table: {model.__tablename__}')
 
 
 def get_foreignkeys():
@@ -76,10 +60,29 @@ def get_foreignkeys():
     cities_foreignkeys = {o.name: o.id for o in cities_query}
 
 
-def insert_events():
-    row_iterator = df.drop(['country_txt', 'region_txt', 'attacktype1_txt', 'targtype1_txt'], axis=1).iterrows()
+def formating_date(row):
+    month, day = row['imonth'], row['iday']
+    if 0 in (month, day):
+        return {'date': date(row['iyear'], 1, 1), 'is_year_only': True}
+    return {'date': date(row['iyear'], month, day), 'is_year_only': False}
+
+
+def preparing_events():
+    global df
+    results = df.apply(formating_date, axis=1)
+    df['date'] = results.map(lambda x: x['date'])
+    df['is_year_only'] = results.map(lambda x: x['is_year_only'])
     get_foreignkeys()
-    insert_events_to_db(row_iterator, before_insert)
+    df['city_id'] = df['city'].map(cities_foreignkeys)
+    df['gname_id'] = df['gname'].map(gnames_foreignkeys)
+    df['score'] = np.where(df['nkill'].isna() | df['nwound'].isna(), None, df['nkill'] * 2 + df['nwound'])
+    df = df[['date', 'is_year_only', 'region_id', 'country_id', 'city_id', 'latitude', 'longitude', 'attacktype_id',
+             'targettype_id', 'gname_id', 'nperps', 'nkill', 'nwound', 'score']]
+
+
+def insert_events():
+    preparing_events()
+    insert_events_to_db(df)
 
 
 def insert_coordinates(model):
@@ -98,3 +101,7 @@ def load_data():
     insert_events()
     insert_coordinates(Region)
     insert_coordinates(Country)
+
+
+if __name__ == '__main__':
+    load_data()

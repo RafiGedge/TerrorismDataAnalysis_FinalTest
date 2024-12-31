@@ -1,5 +1,5 @@
 from sqlalchemy import desc, func
-from database import session_maker, Event, Attacktype, Region, Gname
+from db_connection import session_maker, Event, Attacktype, Region, Gname
 from services.calciualte_coorelation import get_correlation
 
 

@@ -1,6 +1,6 @@
 from sqlalchemy import func
 from services.calculate_location import get_centroid
-from database import session_maker, Region, Event
+from db_connection import session_maker, Region, Event
 
 
 def get_regions():

@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_app.blueprints import *
 
-app = Flask(__name__, template_folder='../front/templates', static_folder='../front/static')
+app = Flask(__name__, template_folder='front/templates', static_folder='front/static')
 
 app.register_blueprint(index_bp)
 
